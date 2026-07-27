@@ -148,26 +148,22 @@ def show_detailed_analysis(data, score):
     
     col4, col5, col6 = st.columns(3)
     col4.metric("Списъци", data['list_count'])
-    col5.metric("Снимки без Alt текст", data['total_images'] - data['images_with_alt'])
+    col5.metric("Снимки без Alt", data['total_images'] - data['images_with_alt'])
     col6.metric("GEO Score", f"{score}/100")
 
     st.markdown("### 📝 Обяснения на метриките:")
     
-    # Метаданни
     st.markdown(f"**1. Мета заглавие (Title):** `{data['title'] if data['title'] else 'Липсва'}`")
     st.caption("ℹ️ *Защо е важно:* AI моделите четат заглавието на страницата, за да разберат контекста. То трябва да бъде ясно и точно (между 10 и 80 символа).")
     
-    # H1
     h1_msg = "✅ Точно 1 заглавие" if data['h1_count'] == 1 else ("❌ Липсва" if data['h1_count'] == 0 else "⚠️ Твърде много H1")
     st.markdown(f"**2. Главно заглавие (H1):** {h1_msg}")
     st.caption("ℹ️ *Защо е важно:* H1 заглавието е темата на страницата. Търсачките се объркват, ако има повече от едно главно заглавие.")
     
-    # Списъци
     list_msg = "✅ Открити са списъци" if data['has_lists'] else "❌ Липсват списъци"
     st.markdown(f"**3. Структурирани данни (Списъци):** {list_msg}")
     st.caption("ℹ️ *Защо е важно:* Булетите (списъците) са любимият формат на AI. От тях изкуственият интелект извлича конкретни факти.")
     
-    # Снимки
     st.markdown(f"**4. Изображения (Alt Text):** Намерени {data['total_images']}, от които {data['images_with_alt']} имат описание.")
     st.caption("ℹ️ *Защо е важно:* Машините не виждат картинки, те четат Alt текста. Липсата му означава пропусната ключова дума.")
 
@@ -181,7 +177,7 @@ st.sidebar.markdown("[Вземете ключ от тук](https://aistudio.goog
 st.title("📈 GEO Analyzer Dashboard")
 st.markdown("Пълен набор инструменти за оптимизация на сайтове за Generative AI търсачки.")
 
-# Създаване на табове (Tabs)
+# Създаване на табове
 tab_single, tab_battle, tab_sitemap = st.tabs(["🔍 Единичен Анализ", "⚔️ Битка с Конкурент", "🗺️ Масов Анализ (Sitemap)"])
 
 # ================= ТАБ 1: ЕДИНИЧЕН АНАЛИЗ =================
@@ -227,6 +223,14 @@ with tab_single:
                 st.success("Готово!")
                 with st.container(border=True):
                     st.markdown(res['optimized_text'])
+                
+                # ВЪРНАТ БУТОН ЗА ИЗТЕГЛЯНЕ
+                st.download_button(
+                    label="📥 Изтегли оптимизирания текст (.md)",
+                    data=res['optimized_text'],
+                    file_name="geo_optimized_content.md",
+                    mime="text/markdown"
+                )
             else:
                 st.error(res['error'])
 
@@ -305,12 +309,11 @@ with tab_sitemap:
                             "Списъци": data['list_count']
                         })
                     progress_bar.progress((i + 1) / len(urls_to_scan))
-                    time.sleep(0.5) # Малка пауза, за да не блокират IP-то ви
+                    time.sleep(0.5) 
                 
                 if results:
                     st.success("Сканирането завърши!")
                     df = pd.DataFrame(results)
-                    # Сортираме от най-слабите (нуждаещи се от помощ) към най-силните
                     df = df.sort_values(by="GEO Score", ascending=True)
                     st.dataframe(df, use_container_width=True)
                     st.caption("💡 Таблицата е сортирана от най-ниския резултат нагоре. Започнете оптимизацията от първите страници в списъка.")
